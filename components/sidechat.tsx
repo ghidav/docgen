@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -32,6 +33,7 @@ import { useCurrentDocument } from "@/providers/current-document"
 const CURRENT_DOC_TAG_PATTERN = /^<current_doc>.*?<\/current_doc>\s*/i
 
 function SidechatContent() {
+  const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
   const [input, setInput] = useState("")
   const inputRef = useRef<HTMLInputElement>(null)
@@ -42,6 +44,11 @@ function SidechatContent() {
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false)
   const { toast } = useToast()
   const { currentDocumentId, triggerReload } = useCurrentDocument()
+
+  // Hide chat button on login and signup pages
+  if (pathname === '/login' || pathname === '/signup') {
+    return null
+  }
 
   const {
     currentConversation,

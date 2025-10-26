@@ -1,4 +1,5 @@
 import type { Document } from "@/types/document"
+import { createClient } from "@/lib/supabase/client"
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"
 
@@ -9,8 +10,23 @@ export class DocumentApiClient {
     this.baseUrl = baseUrl
   }
 
+  private async getAuthHeaders(): Promise<Record<string, string>> {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error("User not authenticated")
+    }
+
+    return {
+      "Content-Type": "application/json",
+      "X-User-Id": user.id,
+    }
+  }
+
   async listDocuments(): Promise<Document[]> {
-    const response = await fetch(`${this.baseUrl}/documents`)
+    const headers = await this.getAuthHeaders()
+    const response = await fetch(`${this.baseUrl}/documents`, { headers })
     if (!response.ok) {
       throw new Error(`Failed to fetch documents: ${response.statusText}`)
     }
@@ -18,7 +34,8 @@ export class DocumentApiClient {
   }
 
   async getDocument(id: string): Promise<Document> {
-    const response = await fetch(`${this.baseUrl}/documents/${id}`)
+    const headers = await this.getAuthHeaders()
+    const response = await fetch(`${this.baseUrl}/documents/${id}`, { headers })
     if (!response.ok) {
       throw new Error(`Failed to fetch document: ${response.statusText}`)
     }
@@ -26,13 +43,20 @@ export class DocumentApiClient {
   }
 
   async createDocument(document: Omit<Document, "id">): Promise<Document> {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+      throw new Error("User not authenticated")
+    }
+
+    const headers = await this.getAuthHeaders()
     const response = await fetch(`${this.baseUrl}/documents`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({
         title: document.title,
+        owner_id: user.id,
         sections: document.sections,
         client: document.client,
         authors: document.authors,
@@ -51,11 +75,10 @@ export class DocumentApiClient {
     id: string,
     updates: Partial<Pick<Document, "title" | "sections" | "client" | "authors" | "classified" | "last_revision" | "contacts">>
   ): Promise<Document> {
+    const headers = await this.getAuthHeaders()
     const response = await fetch(`${this.baseUrl}/documents/${id}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify(updates),
     })
     if (!response.ok) {
@@ -65,8 +88,10 @@ export class DocumentApiClient {
   }
 
   async deleteDocument(id: string): Promise<void> {
+    const headers = await this.getAuthHeaders()
     const response = await fetch(`${this.baseUrl}/documents/${id}`, {
       method: "DELETE",
+      headers,
     })
     if (!response.ok) {
       throw new Error(`Failed to delete document: ${response.statusText}`)

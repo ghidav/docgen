@@ -14,6 +14,9 @@ export const metadata: Metadata = {
   title: 'Document Management System',
   description: 'AI-powered document management with LangGraph',
   generator: 'v0.app',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

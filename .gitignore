@@ -1,0 +1,107 @@
+# =========================================
+# Logs
+# =========================================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# =========================================
+# Dipendenze / Node
+# =========================================
+node_modules/
+.pnpm-store/
+
+# =========================================
+# Build output (Next.js / Node)
+# =========================================
+.next/
+.next/cache/
+.next/static/
+out/
+build/
+dist/
+
+# Tipi generati da Next (app router, next-env.d.ts cache ecc.)
+.next/types/
+
+# =========================================
+# Ambiente / Segreti
+# Mantieni .env.example versionato
+# =========================================
+.env*
+!.env.example
+
+# =========================================
+# Test & Coverage
+# =========================================
+coverage/
+.junit/
+test-results/
+playwright-report/
+.playwright/
+cypress/screenshots/
+cypress/videos/
+cypress/downloads/
+
+# =========================================
+# Tooling / Cache
+# =========================================
+.eslintcache
+.stylelintcache
+.turbo/
+.cache/
+parcel-cache/
+vite.config.timestamp-*
+*.tsbuildinfo
+
+# =========================================
+# Hosting / Piattaforme
+# =========================================
+.vercel/
+.netlify/
+
+# =========================================
+# IDE / Editor
+# =========================================
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+
+# =========================================
+# Sistema operativo
+# =========================================
+.DS_Store
+Thumbs.db
+Icon?
+ehthumbs.db
+
+# =========================================
+# Storybook (se in uso)
+# =========================================
+storybook-static/
+out-storybook/
+
+# =========================================
+# Prisma / SQLite (se in uso)
+# =========================================
+*.sqlite
+*.sqlite-journal
+prisma/*.db
+
+# =========================================
+# Altri file temporanei
+# =========================================
+*.swp
+*.swo
+.history/
+
+# =========================================
+# Default components
+# =========================================
+components/ui

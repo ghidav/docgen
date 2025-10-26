@@ -209,8 +209,7 @@ export function DocumentEditor({ initialDocument, onBack }: DocumentEditorProps)
           </div>
           <div className="flex gap-2">
             <Button onClick={() => setSettingsOpen(true)} variant="outline" size="sm">
-              <Settings className="h-4 w-4 mr-2" />
-              Settings
+              <Settings className="h-4 w-4" />
             </Button>
             {document.id && (
               <Button
@@ -221,13 +220,11 @@ export function DocumentEditor({ initialDocument, onBack }: DocumentEditorProps)
               >
                 {refetching ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Reloading...
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Reload
+                    <RefreshCw className="h-4 w-4" />
                   </>
                 )}
               </Button>
@@ -235,13 +232,11 @@ export function DocumentEditor({ initialDocument, onBack }: DocumentEditorProps)
             <Button onClick={handleSave} disabled={saving} size="sm">
               {saving ? (
                 <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Saving...
+                  <Loader2 className="h-4 w-4 animate-spin" />
                 </>
               ) : (
                 <>
-                  <Save className="h-4 w-4 mr-2" />
-                  {document.id ? "Save" : "Create"}
+                  <Save className="h-4 w-4" />
                 </>
               )}
             </Button>

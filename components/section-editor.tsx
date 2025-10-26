@@ -5,7 +5,17 @@ import type { Section, Subsection } from "@/types/document"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SubsectionEditor } from "./subsection-editor"
-import { GripVertical, X, Plus, ArrowUp, ArrowDown } from "lucide-react"
+import { X, Plus, ArrowUp, ArrowDown } from "lucide-react"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface SectionEditorProps {
   section: Section
@@ -18,7 +28,7 @@ interface SectionEditorProps {
 }
 
 export function SectionEditor({ section, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: SectionEditorProps) {
-  const [isHovered, setIsHovered] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   const addSubsection = () => {
     const newSubsection: Subsection = {
@@ -55,49 +65,46 @@ export function SectionEditor({ section, onUpdate, onDelete, onMoveUp, onMoveDow
   }
 
   return (
-    <div
-      className="group relative mt-12 mb-10"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Hover controls on the left */}
-      {isHovered && (
-        <div className="absolute -left-16 top-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMoveUp}
-            disabled={isFirst}
-            className="h-6 w-6 p-0"
-          >
-            <ArrowUp className="h-3 w-3 text-muted-foreground" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onMoveDown}
-            disabled={isLast}
-            className="h-6 w-6 p-0"
-          >
-            <ArrowDown className="h-3 w-3 text-muted-foreground" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-6 w-6 p-0 cursor-grab active:cursor-grabbing"
-          >
-            <GripVertical className="h-4 w-4 text-muted-foreground" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={onDelete}
-            className="h-6 w-6 p-0 hover:text-destructive"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
+    <div className="group relative mt-12 mb-10">
+      {/* Hover controls - arrows on the left */}
+      <div className="absolute -left-16 top-3 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onMoveUp}
+          disabled={isFirst}
+          className="h-6 w-6 p-0"
+        >
+          <ArrowUp className="h-3 w-3 text-muted-foreground" />
+        </Button>
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onMoveDown}
+          disabled={isLast}
+          className="h-6 w-6 p-0"
+        >
+          <ArrowDown className="h-3 w-3 text-muted-foreground" />
+        </Button>
+      </div>
+
+      {/* Delete button on the right */}
+      <div className="absolute -right-16 top-3 opacity-0 group-hover:opacity-100 transition-opacity">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            if (section.subsections.length > 0) {
+              setShowDeleteDialog(true)
+            } else {
+              onDelete()
+            }
+          }}
+          className="h-6 w-6 p-0 hover:text-destructive"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
 
       {/* Section title - styled as H1 */}
       <Input
@@ -138,6 +145,25 @@ export function SectionEditor({ section, onUpdate, onDelete, onMoveUp, onMoveDow
 
       {/* Divider after section - subtle */}
       <div className="mt-8 border-t border-border/30" />
+
+      {/* Delete confirmation dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete section?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This section contains {section.subsections.length} subsection{section.subsections.length !== 1 ? 's' : ''}.
+              Deleting it will also remove all subsections and their content. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -37,10 +37,11 @@ function SidechatContent() {
   const inputRef = useRef<HTMLInputElement>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollViewportRef = useRef<HTMLDivElement>(null)
+  const prevIsLoadingRef = useRef<boolean>(false)
   const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
   const [isCreatingNewChat, setIsCreatingNewChat] = useState(false)
   const { toast } = useToast()
-  const { currentDocumentId } = useCurrentDocument()
+  const { currentDocumentId, triggerReload } = useCurrentDocument()
 
   const {
     currentConversation,
@@ -63,6 +64,25 @@ function SidechatContent() {
       scrollViewportRef.current.scrollTop = scrollViewportRef.current.scrollHeight
     }
   }, [messages.length, isLoading])
+
+  // Auto-reload document when assistant message ends
+  useEffect(() => {
+    const wasLoading = prevIsLoadingRef.current
+    const isNowLoading = isLoading
+
+    // Detect transition from loading to not loading (message completed)
+    if (wasLoading && !isNowLoading && currentDocumentId) {
+      // Add delay to allow backend to persist changes
+      const timeoutId = setTimeout(() => {
+        triggerReload()
+      }, 500)
+
+      return () => clearTimeout(timeoutId)
+    }
+
+    // Update ref for next render
+    prevIsLoadingRef.current = isLoading
+  }, [isLoading, currentDocumentId, triggerReload])
 
   const handleStartNewChat = () => {
     setIsNewChatDialogOpen(true)

@@ -32,10 +32,11 @@ export function DocumentEditor({ initialDocument, onBack }: DocumentEditorProps)
   const [tocVisible, setTocVisible] = useState(true)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const { toast} = useToast()
-  const { setCurrentDocumentId } = useCurrentDocument()
+  const { setCurrentDocumentId, reloadTrigger } = useCurrentDocument()
 
   // Refs for sections to enable scrolling
   const sectionRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const isInitialMountRef = useRef(true)
 
   useEffect(() => {
     if (initialDocument) {
@@ -47,6 +48,21 @@ export function DocumentEditor({ initialDocument, onBack }: DocumentEditorProps)
     setCurrentDocumentId(document.id || undefined)
     return () => setCurrentDocumentId(undefined)
   }, [document.id, setCurrentDocumentId])
+
+  // Auto-reload when triggered by chat assistant
+  useEffect(() => {
+    // Skip initial mount
+    if (isInitialMountRef.current) {
+      isInitialMountRef.current = false
+      return
+    }
+
+    // Only reload if document is saved and has an ID
+    if (document.id) {
+      handleRefetch()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reloadTrigger])
 
   const addSection = () => {
     const newSection: Section = {

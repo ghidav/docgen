@@ -56,15 +56,17 @@ export function SignUpForm() {
   }
 
   return (
-    <form onSubmit={handleSignUp} className="space-y-4 w-full max-w-md">
+    <form onSubmit={handleSignUp} className="flex w-full flex-col gap-6">
       {error && (
-        <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-sm">
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
 
-      <div className="space-y-2">
-        <Label htmlFor="fullName">Full Name</Label>
+      <div className="space-y-3">
+        <Label htmlFor="fullName" className="text-sm font-medium text-neutral-700">
+          Full name
+        </Label>
         <Input
           id="fullName"
           type="text"
@@ -76,11 +78,14 @@ export function SignUpForm() {
           }}
           required
           disabled={loading}
+          className="h-12 rounded-full border-2 border-neutral-200 bg-white/60 px-5 text-base text-neutral-900 placeholder:text-neutral-400 focus-visible:border-neutral-400 focus-visible:ring-neutral-900/10"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="email">Email</Label>
+      <div className="space-y-3">
+        <Label htmlFor="email" className="text-sm font-medium text-neutral-700">
+          Email
+        </Label>
         <Input
           id="email"
           type="email"
@@ -92,15 +97,18 @@ export function SignUpForm() {
           }}
           required
           disabled={loading}
+          className="h-12 rounded-full border-2 border-neutral-200 bg-white/60 px-5 text-base text-neutral-900 placeholder:text-neutral-400 focus-visible:border-neutral-400 focus-visible:ring-neutral-900/10"
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="password">Password</Label>
+      <div className="space-y-3">
+        <Label htmlFor="password" className="text-sm font-medium text-neutral-700">
+          Password
+        </Label>
         <div className="relative">
           <Input
             id="password"
-            type={showPassword ? "text" : "password"}
+            type={showPassword ? 'text' : 'password'}
             placeholder="••••••••"
             value={password}
             onChange={(e) => {
@@ -110,30 +118,34 @@ export function SignUpForm() {
             required
             minLength={6}
             disabled={loading}
-            className="pr-10"
+            className="h-12 rounded-full border-2 border-neutral-200 bg-white/60 px-5 pr-12 text-base text-neutral-900 placeholder:text-neutral-400 focus-visible:border-neutral-400 focus-visible:ring-neutral-900/10"
           />
           <Button
             type="button"
             variant="ghost"
-            size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            size="icon-sm"
+            className="absolute right-1.5 top-1.5 h-9 w-9 rounded-full bg-transparent text-neutral-500 hover:bg-black/5 hover:text-neutral-800 focus-visible:ring-neutral-900/10"
             onClick={() => setShowPassword(!showPassword)}
             disabled={loading}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4 text-muted-foreground" />
+              <EyeOff className="h-4 w-4" />
             ) : (
-              <Eye className="h-4 w-4 text-muted-foreground" />
+              <Eye className="h-4 w-4" />
             )}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
-          Password must be at least 6 characters
+        <p className="text-xs text-neutral-500">
+          Use at least 6 characters to keep your account secure.
         </p>
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Creating account...' : 'Sign up'}
+      <Button
+        type="submit"
+        className="h-12 w-full rounded-full bg-neutral-900 text-base font-medium text-white shadow-[0_18px_35px_rgba(4,18,31,0.35)] transition-transform hover:-translate-y-0.5 hover:bg-black focus-visible:ring-black/20 disabled:translate-y-0 disabled:opacity-70 disabled:shadow-none"
+        disabled={loading}
+      >
+        {loading ? 'Creating account...' : 'Create account'}
       </Button>
     </form>
   )

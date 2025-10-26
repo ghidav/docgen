@@ -124,59 +124,13 @@
   }
 }
 
-@keyframes loginGradient {
-  0% {
-    background-position: 0% 60%, 50% 0%, 100% 55%, 50% 50%;
-  }
-  50% {
-    background-position: 20% 80%, 40% 20%, 85% 65%, 50% 50%;
-  }
-  100% {
-    background-position: 80% 90%, 60% 40%, 60% 80%, 50% 50%;
-  }
-}
-
-@keyframes loginGlowFloat {
-  0% {
-    transform: translate(-10%, -5%) rotate(0deg) scale(1);
-  }
-  50% {
-    transform: translate(5%, 4%) rotate(6deg) scale(1.05);
-  }
-  100% {
-    transform: translate(-8%, 6%) rotate(-4deg) scale(1);
-  }
-}
-
 @layer utilities {
-  .login-animated-bg {
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
+  .auth-gradient-bg {
     background:
-      radial-gradient(circle at 15% 80%, rgba(99, 102, 241, 0.7), transparent 60%),
-      radial-gradient(circle at 85% 20%, rgba(236, 72, 153, 0.6), transparent 55%),
-      radial-gradient(circle at 80% 85%, rgba(56, 189, 248, 0.6), transparent 60%),
-      linear-gradient(160deg, #04121f 0%, #04121f 35%, rgba(4, 18, 31, 0.9) 100%);
-    background-size: 160% 160%, 160% 160%, 160% 160%, 100% 100%;
-    background-position: 0% 60%, 50% 0%, 100% 55%, 50% 50%;
-    filter: blur(0px);
-    opacity: 0.9;
-    pointer-events: none;
-    transition: filter 0.6s ease;
-    animation: loginGradient 24s ease-in-out infinite alternate;
-  }
-
-  .login-animated-bg::after {
-    content: '';
-    position: absolute;
-    inset: -25%;
-    background:
-      radial-gradient(circle at 30% 70%, rgba(248, 113, 113, 0.25), transparent 65%),
-      radial-gradient(circle at 70% 40%, rgba(14, 165, 233, 0.2), transparent 60%),
-      radial-gradient(circle at 50% 60%, rgba(244, 114, 182, 0.3), transparent 60%);
-    filter: blur(80px);
-    opacity: 0.9;
-    animation: loginGlowFloat 32s ease-in-out infinite alternate;
+      radial-gradient(circle at 18% 20%, rgba(255, 255, 255, 0.08), transparent 60%),
+      radial-gradient(circle at 82% 25%, rgba(148, 163, 184, 0.14), transparent 55%),
+      radial-gradient(circle at 20% 75%, rgba(31, 41, 55, 0.35), transparent 60%),
+      linear-gradient(155deg, #101014 0%, #17191f 45%, #101218 100%);
+    background-color: #101014;
   }
 }

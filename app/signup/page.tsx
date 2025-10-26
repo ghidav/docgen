@@ -1,27 +1,35 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { SignUpForm } from '@/components/auth/signup-form'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 export default function SignUpPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-6 py-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Create an account</CardTitle>
-          <CardDescription>
-            Enter your information to create your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <SignUpForm />
-          <div className="text-center text-sm">
-            Already have an account?{' '}
-            <Link href="/login" className="text-primary hover:underline">
-              Log in
-            </Link>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden auth-gradient-bg px-4 py-10 sm:px-6">
+      <div className="w-full max-w-md">
+        <div className="rounded-[36px] border border-white/10 bg-white/95 p-8 shadow-[0_40px_120px_rgba(4,18,31,0.45)] backdrop-blur lg:p-10">
+          <div className="mb-8 flex flex-col items-center text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full border border-white/40 bg-white/80 p-4 shadow-[0_10px_30px_rgba(4,18,31,0.12)]">
+              <Image
+                src="/logo.svg"
+                alt="Company logo"
+                width={64}
+                height={64}
+                priority
+                className="h-full w-full object-contain"
+              />
+            </div>
+            <h1 className="mt-6 text-3xl font-semibold text-neutral-900">Create an account</h1>
+            <p className="mt-2 text-sm text-neutral-600">
+              Already have an account?{' '}
+              <Link href="/login" className="font-medium text-neutral-900 hover:underline">
+                Log in
+              </Link>
+            </p>
           </div>
-        </CardContent>
-      </Card>
+
+          <SignUpForm />
+        </div>
+      </div>
     </div>
   )
 }

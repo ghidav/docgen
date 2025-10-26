@@ -111,7 +111,7 @@ export function SubsectionEditor({ subsection, onUpdate, onDelete, onMoveUp, onM
         placeholder="Subsection Heading"
         value={subsection.title}
         onChange={(e) => onUpdate({ ...subsection, title: e.target.value })}
-        className="text-l font-semibold border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 mb-4 bg-transparent placeholder:text-muted-foreground/40"
+        className="text-l font-semibold border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 mb-4 bg-transparent placeholder:text-muted-foreground/40 shadow-none"
       />
 
       {/* Blocks - appear as paragraphs */}
@@ -142,6 +142,9 @@ export function SubsectionEditor({ subsection, onUpdate, onDelete, onMoveUp, onM
           <span className="text-xs">Add content</span>
         </Button>
       </div>
+
+      {/* Divider after subsection - thin line */}
+      <div className="mt-6 border-t border-border/50" />
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

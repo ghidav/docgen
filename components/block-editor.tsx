@@ -57,7 +57,7 @@ export function BlockEditor({ block, onUpdate, onDelete, onMoveUp, onMoveDown, i
         value={block.content}
         onChange={(e) => onUpdate({ ...block, content: e.target.value })}
         placeholder="Type something..."
-        className="min-h-[40px] resize-none border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-relaxed bg-transparent"
+        className="min-h-[40px] resize-none border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base leading-relaxed bg-transparent shadow-none"
         style={{
           height: "auto",
           overflow: "hidden",

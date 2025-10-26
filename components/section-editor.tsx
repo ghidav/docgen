@@ -111,7 +111,7 @@ export function SectionEditor({ section, onUpdate, onDelete, onMoveUp, onMoveDow
         placeholder="Section Title"
         value={section.title}
         onChange={(e) => onUpdate({ ...section, title: e.target.value })}
-        className="text-xl font-bold border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 mb-6 bg-transparent placeholder:text-muted-foreground/40"
+        className="text-xl font-bold border-0 p-0 focus-visible:ring-0 focus-visible:ring-offset-0 mb-6 bg-transparent placeholder:text-muted-foreground/40 shadow-none"
       />
 
       {/* Subsections - appear as natural content */}
@@ -143,8 +143,8 @@ export function SectionEditor({ section, onUpdate, onDelete, onMoveUp, onMoveDow
         </Button>
       </div>
 
-      {/* Divider after section - subtle */}
-      <div className="mt-8 border-t border-border/30" />
+      {/* Divider after section - prominent stroke */}
+      <div className="mt-8 border-t-2 border-border" />
 
       {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

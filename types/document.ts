@@ -26,6 +26,7 @@ export interface Section {
 export interface Document {
   id: string
   title: string
+  subtitle?: string
   sections: Section[]
   // Metadata fields
   client?: string

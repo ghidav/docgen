@@ -1,11 +1,26 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import type { Subsection, Block } from "@/types/document"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { BlockEditor } from "./block-editor"
-import { X, Plus, ArrowUp, ArrowDown } from "lucide-react"
+import { useState } from "react";
+import type { Subsection, Block } from "@/types/document";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { BlockEditor } from "./block-editor";
+import {
+  X,
+  Plus,
+  ArrowUp,
+  ArrowDown,
+  Type,
+  List,
+  Table,
+  Image,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,54 +30,67 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+} from "@/components/ui/alert-dialog";
 
 interface SubsectionEditorProps {
-  subsection: Subsection
-  onUpdate: (subsection: Subsection) => void
-  onDelete: () => void
-  onMoveUp?: () => void
-  onMoveDown?: () => void
-  isFirst?: boolean
-  isLast?: boolean
+  subsection: Subsection;
+  onUpdate: (subsection: Subsection) => void;
+  onDelete: () => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  isFirst?: boolean;
+  isLast?: boolean;
+  documentId: string;
 }
 
-export function SubsectionEditor({ subsection, onUpdate, onDelete, onMoveUp, onMoveDown, isFirst, isLast }: SubsectionEditorProps) {
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+export function SubsectionEditor({
+  subsection,
+  onUpdate,
+  onDelete,
+  onMoveUp,
+  onMoveDown,
+  isFirst,
+  isLast,
+  documentId,
+}: SubsectionEditorProps) {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
-  const addBlock = () => {
+  const addBlock = (type: Block["type"] = "text") => {
     const newBlock: Block = {
       id: `block-${Date.now()}`,
-      type: "text",
+      type,
       content: "",
-    }
+    };
     onUpdate({
       ...subsection,
       blocks: [...subsection.blocks, newBlock],
-    })
-  }
+    });
+  };
 
   const updateBlock = (index: number, block: Block) => {
-    const newBlocks = [...subsection.blocks]
-    newBlocks[index] = block
-    onUpdate({ ...subsection, blocks: newBlocks })
-  }
+    const newBlocks = [...subsection.blocks];
+    newBlocks[index] = block;
+    onUpdate({ ...subsection, blocks: newBlocks });
+  };
 
   const deleteBlock = (index: number) => {
     onUpdate({
       ...subsection,
       blocks: subsection.blocks.filter((_, i) => i !== index),
-    })
-  }
+    });
+  };
 
   const moveBlock = (index: number, direction: "up" | "down") => {
-    const newIndex = direction === "up" ? index - 1 : index + 1
-    if (newIndex < 0 || newIndex >= subsection.blocks.length) return
+    const newIndex = direction === "up" ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= subsection.blocks.length) return;
 
-    const newBlocks = [...subsection.blocks]
-    ;[newBlocks[index], newBlocks[newIndex]] = [newBlocks[newIndex], newBlocks[index]]
-    onUpdate({ ...subsection, blocks: newBlocks })
-  }
+    const newBlocks = [...subsection.blocks];
+    [newBlocks[index], newBlocks[newIndex]] = [
+      newBlocks[newIndex],
+      newBlocks[index],
+    ];
+    onUpdate({ ...subsection, blocks: newBlocks });
+  };
 
   return (
     <div className="group relative mt-8 mb-6">
@@ -95,9 +123,9 @@ export function SubsectionEditor({ subsection, onUpdate, onDelete, onMoveUp, onM
           size="sm"
           onClick={() => {
             if (subsection.blocks.length > 0) {
-              setShowDeleteDialog(true)
+              setShowDeleteDialog(true);
             } else {
-              onDelete()
+              onDelete();
             }
           }}
           className="h-6 w-6 p-0 hover:text-destructive"
@@ -126,21 +154,43 @@ export function SubsectionEditor({ subsection, onUpdate, onDelete, onMoveUp, onM
             onMoveDown={() => moveBlock(index, "down")}
             isFirst={index === 0}
             isLast={index === subsection.blocks.length - 1}
+            documentId={documentId}
           />
         ))}
       </div>
 
       {/* Add block button - subtle, appears on hover */}
       <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={addBlock}
-          className="text-muted-foreground hover:text-foreground h-8"
-        >
-          <Plus className="h-3 w-3 mr-1" />
-          <span className="text-xs">Add content</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground hover:text-foreground h-8"
+            >
+              <Plus className="h-3 w-3 mr-1" />
+              <span className="text-xs">Add content</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuItem onClick={() => addBlock("text")}>
+              <Type className="h-4 w-4 mr-2" />
+              <span>Text</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => addBlock("list")}>
+              <List className="h-4 w-4 mr-2" />
+              <span>List</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => addBlock("table")}>
+              <Table className="h-4 w-4 mr-2" />
+              <span>Table</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => addBlock("image")}>
+              <Image className="h-4 w-4 mr-2" />
+              <span>Image</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Divider after subsection - thin line */}
@@ -152,18 +202,22 @@ export function SubsectionEditor({ subsection, onUpdate, onDelete, onMoveUp, onM
           <AlertDialogHeader>
             <AlertDialogTitle>Delete subsection?</AlertDialogTitle>
             <AlertDialogDescription>
-              This subsection contains {subsection.blocks.length} content block{subsection.blocks.length !== 1 ? 's' : ''}.
-              Deleting it will also remove all content. This action cannot be undone.
+              This subsection contains {subsection.blocks.length} content block
+              {subsection.blocks.length !== 1 ? "s" : ""}. Deleting it will also
+              remove all content. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={onDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
-  )
+  );
 }

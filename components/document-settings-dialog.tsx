@@ -29,6 +29,7 @@ export function DocumentSettingsDialog({
   onOpenChange,
   onSave,
 }: DocumentSettingsDialogProps) {
+  const [subtitle, setSubtitle] = useState(document.subtitle || "")
   const [client, setClient] = useState(document.client || "")
   const [authors, setAuthors] = useState((document.authors || []).join(", "))
   const [classified, setClassified] = useState(document.classified || false)
@@ -39,6 +40,7 @@ export function DocumentSettingsDialog({
 
   // Update state when document changes
   useEffect(() => {
+    setSubtitle(document.subtitle || "")
     setClient(document.client || "")
     setAuthors((document.authors || []).join(", "))
     setClassified(document.classified || false)
@@ -56,6 +58,7 @@ export function DocumentSettingsDialog({
       .filter((a) => a.length > 0)
 
     onSave({
+      subtitle: subtitle || undefined,
       client: client || undefined,
       authors: authorsArray.length > 0 ? authorsArray : undefined,
       classified,
@@ -76,6 +79,17 @@ export function DocumentSettingsDialog({
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          {/* Subtitle */}
+          <div className="grid gap-2">
+            <Label htmlFor="subtitle">Subtitle</Label>
+            <Input
+              id="subtitle"
+              value={subtitle}
+              onChange={(e) => setSubtitle(e.target.value)}
+              placeholder="Enter document subtitle"
+            />
+          </div>
+
           {/* Client */}
           <div className="grid gap-2">
             <Label htmlFor="client">Client</Label>

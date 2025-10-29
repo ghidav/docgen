@@ -56,6 +56,7 @@ export class DocumentApiClient {
       headers,
       body: JSON.stringify({
         title: document.title,
+        subtitle: document.subtitle,
         owner_id: user.id,
         sections: document.sections,
         client: document.client,
@@ -73,7 +74,7 @@ export class DocumentApiClient {
 
   async updateDocument(
     id: string,
-    updates: Partial<Pick<Document, "title" | "sections" | "client" | "authors" | "classified" | "last_revision" | "contacts">>
+    updates: Partial<Pick<Document, "title" | "subtitle" | "sections" | "client" | "authors" | "classified" | "last_revision" | "contacts">>
   ): Promise<Document> {
     const headers = await this.getAuthHeaders()
     const response = await fetch(`${this.baseUrl}/documents/${id}`, {

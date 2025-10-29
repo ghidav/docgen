@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { useEffect, useRef, useState } from "react"
-import { usePathname } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -11,153 +11,193 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog"
-import {
-  Send,
-  Sparkles,
-  MessageCircle,
-  Loader2,
-  Plus,
-  X
-} from "lucide-react"
-import { useConversations } from "@/hooks/use-conversations"
-import { useToast } from "@/hooks/use-toast"
-import { cn, getContentString } from "@/lib/utils"
-import { StreamProvider, useStreamContext } from "@/providers/Stream"
-import { Message } from "@langchain/langgraph-sdk"
-import { v4 as uuidv4 } from "uuid"
-import { ensureToolCallsHaveResponses } from "@/lib/ensure-tool-responses"
-import { Markdown } from "@/components/ui/markdown"
-import { useCurrentDocument } from "@/providers/current-document"
+} from "@/components/ui/dialog";
+import { Send, Sparkles, MessageCircle, Loader2, Plus, X } from "lucide-react";
+import { useConversations } from "@/hooks/use-conversations";
+import { useToast } from "@/hooks/use-toast";
+import { cn, getContentString } from "@/lib/utils";
+import { StreamProvider, useStreamContext } from "@/providers/Stream";
+import { Message } from "@langchain/langgraph-sdk";
+import { v4 as uuidv4 } from "uuid";
+import { ensureToolCallsHaveResponses } from "@/lib/ensure-tool-responses";
+import { Markdown } from "@/components/ui/markdown";
+import { useCurrentDocument } from "@/providers/current-document";
+import { createClient } from "@/lib/supabase/client";
 
-const CURRENT_DOC_TAG_PATTERN = /^<current_doc>.*?<\/current_doc>\s*/i
+// Pattern to strip XML context tags from message display
+const CONTEXT_TAGS_PATTERN =
+  /^(?:<user_id>.*?<\/user_id>\s*)?(?:<current_document_id>.*?<\/current_document_id>\s*)?(?:<current_doc>.*?<\/current_doc>\s*)?/i;
 
 function SidechatContent() {
-  const pathname = usePathname()
-  const [isOpen, setIsOpen] = useState(false)
-  const [input, setInput] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const scrollViewportRef = useRef<HTMLDivElement>(null)
-  const prevIsLoadingRef = useRef<boolean>(false)
-  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false)
-  const [isCreatingNewChat, setIsCreatingNewChat] = useState(false)
-  const { toast } = useToast()
-  const { currentDocumentId, triggerReload } = useCurrentDocument()
+  const pathname = usePathname();
+  const [isOpen, setIsOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const scrollViewportRef = useRef<HTMLDivElement>(null);
+  const prevIsLoadingRef = useRef<boolean>(false);
+  const [isNewChatDialogOpen, setIsNewChatDialogOpen] = useState(false);
+  const [isCreatingNewChat, setIsCreatingNewChat] = useState(false);
+  const { toast } = useToast();
+  const { currentDocumentId, triggerReload } = useCurrentDocument();
 
-  // Hide chat button on login and signup pages
-  if (pathname === '/login' || pathname === '/signup') {
-    return null
-  }
-
-  const {
-    currentConversation,
-    createConversation,
-  } = useConversations()
+  const { currentConversation, createConversation } = useConversations();
 
   // Use LangGraph SDK stream
-  const stream = useStreamContext()
-  const isLoading = stream.isLoading
-  const messages = stream.messages ?? []
+  const stream = useStreamContext();
+  const isLoading = stream.isLoading;
+  const messages = stream.messages ?? [];
 
   // Track loading state changes
   useEffect(() => {
-    console.log('isLoading changed:', isLoading, 'messages count:', messages.length)
-  }, [isLoading, messages.length])
+    console.log(
+      "isLoading changed:",
+      isLoading,
+      "messages count:",
+      messages.length,
+    );
+  }, [isLoading, messages.length]);
+
+  // Handle cmd+k keyboard shortcut and Esc to close
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsOpen((prev) => {
+          const newState = !prev;
+          // Focus input after opening
+          if (newState) {
+            setTimeout(() => inputRef.current?.focus(), 0);
+          }
+          return newState;
+        });
+      } else if (e.key === "Escape" && isOpen) {
+        e.preventDefault();
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     if (scrollViewportRef.current) {
-      scrollViewportRef.current.scrollTop = scrollViewportRef.current.scrollHeight
+      scrollViewportRef.current.scrollTop =
+        scrollViewportRef.current.scrollHeight;
     }
-  }, [messages.length, isLoading])
+  }, [messages.length, isLoading]);
 
   // Auto-reload document when assistant message ends
   useEffect(() => {
-    const wasLoading = prevIsLoadingRef.current
-    const isNowLoading = isLoading
+    const wasLoading = prevIsLoadingRef.current;
+    const isNowLoading = isLoading;
 
     // Detect transition from loading to not loading (message completed)
     if (wasLoading && !isNowLoading && currentDocumentId) {
       // Add delay to allow backend to persist changes
       const timeoutId = setTimeout(() => {
-        triggerReload()
-      }, 500)
+        triggerReload();
+      }, 500);
 
-      return () => clearTimeout(timeoutId)
+      return () => clearTimeout(timeoutId);
     }
 
     // Update ref for next render
-    prevIsLoadingRef.current = isLoading
-  }, [isLoading, currentDocumentId, triggerReload])
+    prevIsLoadingRef.current = isLoading;
+  }, [isLoading, currentDocumentId, triggerReload]);
 
   const handleStartNewChat = () => {
-    setIsNewChatDialogOpen(true)
-  }
+    setIsNewChatDialogOpen(true);
+  };
 
   const handleConfirmNewChat = async () => {
-    if (isCreatingNewChat) return
+    if (isCreatingNewChat) return;
 
     try {
-      setIsCreatingNewChat(true)
-      await createConversation()
-      setIsNewChatDialogOpen(false)
-      setInput("")
-      inputRef.current?.focus()
+      setIsCreatingNewChat(true);
+      await createConversation();
+      setIsNewChatDialogOpen(false);
+      setInput("");
+      inputRef.current?.focus();
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to create new conversation",
         variant: "destructive",
-      })
+      });
     } finally {
-      setIsCreatingNewChat(false)
+      setIsCreatingNewChat(false);
     }
-  }
+  };
 
   const handleDialogOpenChange = (open: boolean) => {
-    setIsNewChatDialogOpen(open)
+    setIsNewChatDialogOpen(open);
     if (!open) {
-      setIsCreatingNewChat(false)
+      setIsCreatingNewChat(false);
     }
-  }
+  };
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return
+    if (!input.trim() || isLoading) return;
+
+    // Get authenticated user
+    const supabase = createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to send messages",
+        variant: "destructive",
+      });
+      return;
+    }
 
     // Create conversation if needed
-    let conversation = currentConversation
+    let conversation = currentConversation;
     if (!conversation) {
       try {
-        const newConv = await createConversation()
-        conversation = { conversation: newConv, messages: [] }
+        const newConv = await createConversation();
+        conversation = { conversation: newConv, messages: [] };
       } catch (error) {
         toast({
           title: "Error",
           description: "Failed to create conversation",
           variant: "destructive",
-        })
-        return
+        });
+        return;
       }
     }
 
-    if (!conversation) return
+    if (!conversation) return;
 
-    // Create user message with proper LangGraph format
-    const hiddenTag = currentDocumentId ? `<current_doc>${currentDocumentId}</current_doc>` : ""
+    // Create user message with proper LangGraph format including context XML tags
+    let hiddenTags = "";
+
+    // Always include user_id
+    hiddenTags += `<user_id>${user.id}</user_id>`;
+
+    // Include current_doc if available
+    if (currentDocumentId) {
+      hiddenTags += `<current_document_id>${currentDocumentId}</current_document_id>`;
+    }
 
     const newHumanMessage: Message = {
       id: uuidv4(),
       type: "human",
-      content: `${hiddenTag}${input}`,
-    }
+      content: `${hiddenTags}${input}`,
+    };
 
     // Clear input immediately for better UX
-    const messageText = input
-    setInput("")
+    const messageText = input;
+    setInput("");
 
     // Ensure all tool calls have responses (prevents graph from getting stuck)
-    const toolMessages = ensureToolCallsHaveResponses(messages)
+    const toolMessages = ensureToolCallsHaveResponses(messages);
 
     // Submit to LangGraph with ALL previous messages for context + tool responses
     try {
@@ -165,18 +205,23 @@ function SidechatContent() {
         { messages: [...messages, ...toolMessages, newHumanMessage] },
         {
           streamMode: ["values"],
-        }
-      )
+        },
+      );
     } catch (error) {
-      console.error('Failed to send message:', error)
+      console.error("Failed to send message:", error);
       toast({
         title: "Error",
         description: "Failed to send message",
         variant: "destructive",
-      })
+      });
       // Restore input on error
-      setInput(messageText)
+      setInput(messageText);
     }
+  };
+
+  // Hide chat button on login and signup pages
+  if (pathname === "/login" || pathname === "/signup") {
+    return null;
   }
 
   return (
@@ -208,7 +253,11 @@ function SidechatContent() {
                 Chat Assistant
               </h2>
               <div className="flex items-center gap-2">
-                <Button onClick={handleStartNewChat} size="sm" variant="outline">
+                <Button
+                  onClick={handleStartNewChat}
+                  size="sm"
+                  variant="outline"
+                >
                   <Plus className="h-4 w-4 mr-1" />
                   New
                 </Button>
@@ -223,12 +272,16 @@ function SidechatContent() {
               </div>
             </div>
 
-            <Dialog open={isNewChatDialogOpen} onOpenChange={handleDialogOpenChange}>
+            <Dialog
+              open={isNewChatDialogOpen}
+              onOpenChange={handleDialogOpenChange}
+            >
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>Start a new chat</DialogTitle>
                   <DialogDescription>
-                    Starting a new chat will clear the current conversation history.
+                    Starting a new chat will clear the current conversation
+                    history.
                   </DialogDescription>
                 </DialogHeader>
                 <DialogFooter>
@@ -278,52 +331,88 @@ function SidechatContent() {
                           .filter((message) => {
                             // Skip tool result messages
                             if (message.type === "tool") {
-                              console.log('Filtering out tool message:', message.id)
-                              return false
+                              console.log(
+                                "Filtering out tool message:",
+                                message.id,
+                              );
+                              return false;
                             }
                             // Skip messages with do-not-render prefix
                             if (message.id?.startsWith("do-not-render-")) {
-                              console.log('Filtering out do-not-render message:', message.id)
-                              return false
+                              console.log(
+                                "Filtering out do-not-render message:",
+                                message.id,
+                              );
+                              return false;
                             }
-                            console.log('Message passed filter:', message.type, message.id)
-                            return true
+                            console.log(
+                              "Message passed filter:",
+                              message.type,
+                              message.id,
+                            );
+                            return true;
                           })
                           .map((message) => {
                             // Debug: log raw content structure
-                            console.log('Raw message content:', {
+                            console.log("Raw message content:", {
                               type: message.type,
                               id: message.id,
                               content: message.content,
                               contentType: typeof message.content,
                               isArray: Array.isArray(message.content),
-                              hasAdditionalKwargs: !!(message as any).additional_kwargs,
-                              additionalKwargsKeys: (message as any).additional_kwargs ? Object.keys((message as any).additional_kwargs) : []
-                            })
+                              hasAdditionalKwargs: !!(message as any)
+                                .additional_kwargs,
+                              additionalKwargsKeys: (message as any)
+                                .additional_kwargs
+                                ? Object.keys(
+                                    (message as any).additional_kwargs,
+                                  )
+                                : [],
+                            });
 
-                            // Extract text content from message
-                            const content = getContentString(message.content ?? "")
-                            const displayContent = content.replace(CURRENT_DOC_TAG_PATTERN, "")
+                            // Extract text content from message and strip context XML tags
+                            const content = getContentString(
+                              message.content ?? "",
+                            );
+                            const displayContent = content.replace(
+                              CONTEXT_TAGS_PATTERN,
+                              "",
+                            );
 
-                            console.log('Rendering message:', {
+                            console.log("Rendering message:", {
                               type: message.type,
                               id: message.id,
                               contentLength: content.length,
                               displayContentLength: displayContent.length,
-                              displayContentPreview: displayContent.substring(0, 100),
-                              hasToolCalls: !!(message.tool_calls && message.tool_calls.length > 0)
-                            })
+                              displayContentPreview: displayContent.substring(
+                                0,
+                                100,
+                              ),
+                              hasToolCalls: !!(
+                                message.tool_calls &&
+                                message.tool_calls.length > 0
+                              ),
+                            });
 
                             // Show tool-only messages
-                            const hasToolCalls = message.tool_calls && message.tool_calls.length > 0
+                            const hasToolCalls =
+                              message.tool_calls &&
+                              message.tool_calls.length > 0;
 
                             // Skip only if no content AND no tool calls
                             if (!displayContent.trim() && !hasToolCalls) {
-                              console.log('SKIPPING message (no content, no tools):', message.id)
-                              return null
+                              console.log(
+                                "SKIPPING message (no content, no tools):",
+                                message.id,
+                              );
+                              return null;
                             }
 
-                            console.log('RENDERING message to DOM:', message.type, message.id)
+                            console.log(
+                              "RENDERING message to DOM:",
+                              message.type,
+                              message.id,
+                            );
 
                             return (
                               <div key={message.id}>
@@ -332,27 +421,33 @@ function SidechatContent() {
                                     "p-3 rounded-lg text-sm",
                                     message.type === "human"
                                       ? "bg-primary text-primary-foreground ml-4"
-                                      : "bg-muted mr-4"
+                                      : "bg-muted mr-4",
                                   )}
                                 >
                                   <div className="text-xs font-medium mb-1 opacity-70">
-                                    {message.type === "human" ? "You" : "Assistant"}
+                                    {message.type === "human"
+                                      ? "You"
+                                      : "Assistant"}
                                   </div>
                                   {displayContent.trim() ? (
                                     <Markdown>{displayContent}</Markdown>
                                   ) : hasToolCalls ? (
-                                    <div className="text-muted-foreground italic">Using tools...</div>
+                                    <div className="text-muted-foreground italic">
+                                      Using tools...
+                                    </div>
                                   ) : null}
                                 </div>
                                 {/* Optional: Show tool usage indicator */}
-                                {message.tool_calls && message.tool_calls.length > 0 && (
-                                  <div className="text-xs text-muted-foreground mt-1 ml-1 flex items-center gap-1">
-                                    <Sparkles className="h-3 w-3" />
-                                    Used {message.tool_calls.length} tool{message.tool_calls.length > 1 ? 's' : ''}
-                                  </div>
-                                )}
+                                {message.tool_calls &&
+                                  message.tool_calls.length > 0 && (
+                                    <div className="text-xs text-muted-foreground mt-1 ml-1 flex items-center gap-1">
+                                      <Sparkles className="h-3 w-3" />
+                                      Used {message.tool_calls.length} tool
+                                      {message.tool_calls.length > 1 ? "s" : ""}
+                                    </div>
+                                  )}
                               </div>
-                            )
+                            );
                           })}
                         {/* Show loading indicator */}
                         {isLoading && (
@@ -381,7 +476,9 @@ function SidechatContent() {
                   placeholder="Ask something..."
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !e.shiftKey && handleSend()}
+                  onKeyDown={(e) =>
+                    e.key === "Enter" && !e.shiftKey && handleSend()
+                  }
                   className="flex-1"
                   disabled={isLoading}
                   ref={inputRef}
@@ -403,17 +500,17 @@ function SidechatContent() {
         </>
       )}
     </>
-  )
+  );
 }
 
 // Wrapper component that provides Stream context
 export function Sidechat() {
-  const { currentConversation } = useConversations()
-  const threadId = currentConversation?.conversation.thread_id || null
+  const { currentConversation } = useConversations();
+  const threadId = currentConversation?.conversation.thread_id || null;
 
   return (
     <StreamProvider threadId={threadId}>
       <SidechatContent />
     </StreamProvider>
-  )
+  );
 }

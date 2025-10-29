@@ -44,8 +44,8 @@ export function LoginForm() {
       if (data.user) {
         console.log('Login successful, user:', data.user.id)
         toast.success('Logged in successfully')
-        router.push('/')
-        router.refresh()
+        // Use window.location for a full page reload to avoid chunk loading issues
+        window.location.href = '/'
       }
     } catch (error: any) {
       const errorMessage = error?.message || 'An error occurred during login'

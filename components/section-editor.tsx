@@ -267,8 +267,11 @@ export function SectionEditor({
       <div className="mt-8 border-t-2 border-border" />
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog} modal={true}>
+        <AlertDialogContent
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>Delete section?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -291,8 +294,11 @@ export function SectionEditor({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={onDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                setShowDeleteDialog(false);
+                // Use setTimeout to ensure dialog closes before delete
+                setTimeout(() => onDelete(), 0);
+              }}
             >
               Delete
             </AlertDialogAction>

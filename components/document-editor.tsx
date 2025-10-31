@@ -19,6 +19,7 @@ import { SectionEditor } from "./section-editor";
 import { DocumentSettingsDialog } from "./document-settings-dialog";
 import { useCurrentDocument } from "@/providers/current-document";
 import type { DocumentEditorRef } from "@/app/page";
+import { cleanupOrphanedImages } from "@/lib/utils/image-cleanup";
 
 interface DocumentEditorProps {
   initialDocument?: Document;
@@ -139,10 +140,13 @@ export const DocumentEditor = forwardRef<
 
   const handleSave = async () => {
     setSaving(true);
+    // Store the document state before save for image cleanup
+    const documentBeforeSave = { ...document };
+
     try {
       if (document.id) {
         // Update existing document
-        await apiClient.updateDocument(document.id, {
+        const updatedDoc = await apiClient.updateDocument(document.id, {
           title: document.title,
           subtitle: document.subtitle,
           sections: document.sections,
@@ -152,6 +156,15 @@ export const DocumentEditor = forwardRef<
           last_revision: document.last_revision,
           contacts: document.contacts,
         });
+
+        // Clean up orphaned images after successful save
+        try {
+          await cleanupOrphanedImages(documentBeforeSave, updatedDoc);
+        } catch (cleanupErr) {
+          // Log but don't block the save operation
+          console.error("Error cleaning up orphaned images:", cleanupErr);
+        }
+
         toast({
           title: "Success",
           description: "Document saved successfully",

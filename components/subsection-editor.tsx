@@ -197,8 +197,11 @@ export function SubsectionEditor({
       <div className="mt-6 border-t border-border/50" />
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog} modal={true}>
+        <AlertDialogContent
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>Delete subsection?</AlertDialogTitle>
             <AlertDialogDescription>
@@ -210,8 +213,11 @@ export function SubsectionEditor({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={onDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                setShowDeleteDialog(false);
+                // Use setTimeout to ensure dialog closes before delete
+                setTimeout(() => onDelete(), 0);
+              }}
             >
               Delete
             </AlertDialogAction>

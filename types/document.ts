@@ -23,6 +23,19 @@ export interface Section {
   updated_at?: string
 }
 
+export interface Collaborator {
+  id: string
+  user_id: string
+  role: string
+  added_by?: string
+  added_at?: string
+  profile: {
+    email: string
+    full_name: string
+    avatar_url?: string
+  }
+}
+
 export interface Document {
   id: string
   title: string
@@ -30,7 +43,8 @@ export interface Document {
   sections: Section[]
   // Metadata fields
   client?: string
-  authors?: string[]
+  authors?: string[] // Legacy field - use collaborators instead
+  collaborators?: Collaborator[]
   classified?: boolean
   last_revision?: string
   contacts?: string

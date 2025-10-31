@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Settings, RefreshCw, Save, Loader2 } from "lucide-react"
+import { ArrowLeft, Settings, RefreshCw, Save, Loader2, Download } from "lucide-react"
 
 interface TopBarProps {
   view: "list" | "editor"
@@ -9,9 +9,11 @@ interface TopBarProps {
   onBack?: () => void
   onSettings?: () => void
   onRefetch?: () => void
+  onExport?: () => void
   onSave?: () => void
   saving?: boolean
   refetching?: boolean
+  exporting?: boolean
   hasDocumentId?: boolean
 }
 
@@ -20,9 +22,11 @@ export function TopBar({
   onBack,
   onSettings,
   onRefetch,
+  onExport,
   onSave,
   saving = false,
   refetching = false,
+  exporting = false,
   hasDocumentId = false,
 }: TopBarProps) {
   return (
@@ -55,6 +59,20 @@ export function TopBar({
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <RefreshCw className="h-4 w-4" />
+                  )}
+                </Button>
+              )}
+              {hasDocumentId && onExport && (
+                <Button
+                  onClick={onExport}
+                  disabled={exporting}
+                  variant="outline"
+                  size="sm"
+                >
+                  {exporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
                   )}
                 </Button>
               )}

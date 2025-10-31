@@ -6,6 +6,8 @@ import { DocumentList } from "@/components/document-list"
 import { NavigationSidebar } from "@/components/navigation-sidebar"
 import { TopBar } from "@/components/top-bar"
 import type { Document } from "@/types/document"
+import { apiClient } from "@/lib/api"
+import { useToast } from "@/hooks/use-toast"
 
 export interface DocumentEditorRef {
   handleSave: () => Promise<void>
@@ -24,7 +26,9 @@ export default function Home() {
     refetching: false,
     documentId: undefined as string | undefined,
   })
+  const [exporting, setExporting] = useState(false)
   const editorRef = useRef<DocumentEditorRef>(null)
+  const { toast } = useToast()
 
   const handleSelectDocument = (doc: Document) => {
     setSelectedDocument(doc)
@@ -41,6 +45,34 @@ export default function Home() {
     setSelectedDocument(undefined)
   }
 
+  const handleExport = async () => {
+    if (!editorState.documentId) {
+      toast({
+        title: "Error",
+        description: "Cannot export: document not saved yet",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setExporting(true)
+    try {
+      await apiClient.exportDocumentToDocx(editorState.documentId)
+      toast({
+        title: "Success",
+        description: "Document exported successfully",
+      })
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: err instanceof Error ? err.message : "Failed to export document",
+        variant: "destructive",
+      })
+    } finally {
+      setExporting(false)
+    }
+  }
+
   return (
     <>
       <NavigationSidebar />
@@ -49,9 +81,11 @@ export default function Home() {
         onBack={handleBackToList}
         onSettings={() => editorRef.current?.handleSettings()}
         onRefetch={() => editorRef.current?.handleRefetch()}
+        onExport={handleExport}
         onSave={() => editorRef.current?.handleSave()}
         saving={editorState.saving}
         refetching={editorState.refetching}
+        exporting={exporting}
         hasDocumentId={!!editorState.documentId}
       />
       <main className="min-h-screen bg-background pl-16 pt-14">
